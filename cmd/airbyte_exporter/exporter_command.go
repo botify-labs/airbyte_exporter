@@ -6,11 +6,14 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
+	"github.com/virtualtam/venom"
 )
 
 const (
@@ -46,6 +49,23 @@ func NewExporterCommand() *cobra.Command {
 		Use:   "airbyte_exporter",
 		Short: "Airbyte Exporter",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			// Configuration file lookup paths
+			home, err := os.UserHomeDir()
+			if err != nil {
+				return err
+			}
+			homeConfigPath := filepath.Join(home, ".config")
+
+			configPaths := []string{DefaultConfigPath, homeConfigPath, "."}
+
+			// Inject global configuration as a pre-run hook
+			//
+			// This is required to let Viper load environment variables and
+			// configuration entries before invoking nested commands.
+			if err := venom.Inject(cmd, EnvPrefix, configPaths, ConfigName, false); err != nil {
+				return err
+			}
+
 			// Global logger configuration
 			var logLevel zerolog.Level
 
