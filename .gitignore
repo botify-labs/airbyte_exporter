@@ -1,0 +1,9 @@
+*~
+*.swp
+
+# Promu builds
+.build/
+.tarballs/
+
+# Binaries
+./airbyte_exporter
