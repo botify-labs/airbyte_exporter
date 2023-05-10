@@ -17,6 +17,8 @@ import (
 )
 
 const (
+	defaultListenAddr string = "0.0.0.0:8080"
+
 	defaultDatabaseAddr     string = "localhost:5432"
 	defaultDatabaseName     string = "airbyte"
 	defaultDatabaseUser     string = "airbyte_exporter"
@@ -24,6 +26,7 @@ const (
 )
 
 var (
+	listenAddr           string
 	defaultLogLevelValue string = zerolog.LevelInfoValue
 	logLevelValue        string
 
@@ -77,9 +80,20 @@ func NewExporterCommand() *cobra.Command {
 			log.Info().Str("log_level", logLevelValue).Msg("setting log level")
 			zerolog.SetGlobalLevel(logLevel)
 
-			return nil
+			// Airbyte Exporter services
+			httpServer := newServer(listenAddr)
+
+			log.Info().Str("addr", listenAddr).Msg("starting HTTP server")
+			return httpServer.ListenAndServe()
 		},
 	}
+
+	cmd.Flags().StringVar(
+		&listenAddr,
+		"listen-addr",
+		defaultListenAddr,
+		"Listen to this address (host:port)",
+	)
 
 	cmd.PersistentFlags().StringVar(
 		&logLevelValue,
