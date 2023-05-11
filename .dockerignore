@@ -1,0 +1,14 @@
+.git/
+.gitignore
+
+*.md
+
+.build/
+.tarballs/
+
+airbyte_exporter
+
+docker/
+.dockerignore
+docker-compose.yml
+Dockerfile
