@@ -13,6 +13,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog/hlog"
 	"github.com/rs/zerolog/log"
+	"github.com/virtualtam/airbyte_exporter/internal/airbyte"
 )
 
 const (
@@ -35,9 +36,8 @@ func accessLogger(r *http.Request, status, size int, dur time.Duration) {
 		Msg("handle request")
 }
 
-func newServer(listenAddr string) *http.Server {
-	collector := NewCollector()
-
+func newServer(airbyteService *airbyte.Service, listenAddr string) *http.Server {
+	collector := NewCollector(airbyteService)
 	prometheus.MustRegister(collector)
 
 	router := http.NewServeMux()

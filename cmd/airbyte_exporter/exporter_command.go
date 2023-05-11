@@ -10,9 +10,12 @@ import (
 	"path/filepath"
 	"strings"
 
+	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
+	"github.com/virtualtam/airbyte_exporter/internal/airbyte"
 	"github.com/virtualtam/venom"
 )
 
@@ -23,6 +26,8 @@ const (
 	defaultDatabaseName     string = "airbyte"
 	defaultDatabaseUser     string = "airbyte_exporter"
 	defaultDatabasePassword string = "airbyte_exporter"
+
+	databaseDriver string = "pgx"
 )
 
 var (
@@ -80,8 +85,36 @@ func NewExporterCommand() *cobra.Command {
 			log.Info().Str("log_level", logLevelValue).Msg("setting log level")
 			zerolog.SetGlobalLevel(logLevel)
 
+			// Database connection pool
+			databaseURI := fmt.Sprintf(
+				"postgres://%s:%s@%s/%s?sslmode=disable",
+				databaseUser,
+				databasePassword,
+				databaseAddr,
+				databaseName,
+			)
+
+			db, err := sqlx.Connect(databaseDriver, databaseURI)
+			if err != nil {
+				log.Error().
+					Err(err).
+					Str("database_driver", databaseDriver).
+					Str("database_addr", databaseAddr).
+					Str("database_name", databaseName).
+					Msg("failed to connect to database")
+				return err
+			}
+			log.Info().
+				Str("database_driver", databaseDriver).
+				Str("database_addr", databaseAddr).
+				Str("database_name", databaseName).
+				Msg("successfully connected to database")
+
 			// Airbyte Exporter services
-			httpServer := newServer(listenAddr)
+			airbyteRepository := airbyte.NewRepository(db)
+			airbyteService := airbyte.NewService(airbyteRepository)
+
+			httpServer := newServer(airbyteService, listenAddr)
 
 			log.Info().Str("addr", listenAddr).Msg("starting HTTP server")
 			return httpServer.ListenAndServe()
