@@ -1,0 +1,32 @@
+---
+name: CI
+
+on: # yamllint disable-line rule:truthy
+  push:
+    branches:
+      - main
+    tags:
+      - v*
+  pull_request: {}
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          # Whenever the Go version is updated here, .promu.yml should also be updated.
+          go-version: 1.20.x
+
+      - name: Build
+        run: make build
+
+      - name: Lint
+        uses: golangci/golangci-lint-action@v2
+
+      - name: Test
+        run: make test
