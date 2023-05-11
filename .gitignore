@@ -6,4 +6,4 @@
 .tarballs/
 
 # Binaries
-./airbyte_exporter
+build/

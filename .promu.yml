@@ -1,0 +1,36 @@
+---
+verbose: false
+
+repository:
+  path: github.com/virtualtam/airbyte_exporter
+
+go:
+  # Whenever the Go version is updated here, .github/workflows/ci.yaml should also be updated.
+  version: "1.20"
+  cgo: true
+
+build:
+  prefix: .
+  binaries:
+    - name: build/airbyte_exporter
+      path: ./cmd/airbyte_exporter
+  flags: -a -trimpath
+  ldflags: |
+    -s
+    -X {{repoPath}}/version.Version={{.Version}}
+    -X {{repoPath}}/version.Revision={{.Revision}}
+    -X {{repoPath}}/version.Branch={{.Branch}}
+    -X {{repoPath}}/version.BuildUser={{user}}@{{host}}
+    -X {{repoPath}}/version.BuildDate={{date "20060102-15:04:05"}}
+
+crossbuild:
+  platforms:
+    - linux/amd64
+    - linux/arm64
+
+tarball:
+  prefix: .
+  files:
+    - CHANGELOG.md
+    - LICENSE
+    - README.md
