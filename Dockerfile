@@ -28,6 +28,7 @@ COPY --from=builder /app/build/airbyte_exporter /usr/local/bin/airbyte_exporter
 
 ENV \
     AIRBYTE_EXPORTER_DB_ADDR="postgres:5432" \
+    AIRBYTE_EXPORTER_DB_SSLMODE="disable" \
     AIRBYTE_EXPORTER_DB_NAME="airbyte" \
     AIRBYTE_EXPORTER_DB_USER="airbyte_exporter" \
     AIRBYTE_EXPORTER_DB_PASSWORD="airbyte_exporter" \

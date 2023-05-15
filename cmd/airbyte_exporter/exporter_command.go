@@ -23,6 +23,7 @@ const (
 	defaultListenAddr string = "0.0.0.0:8080"
 
 	defaultDatabaseAddr     string = "localhost:5432"
+	defaultDatabaseSSLMode  string = "disable"
 	defaultDatabaseName     string = "airbyte"
 	defaultDatabaseUser     string = "airbyte_exporter"
 	defaultDatabasePassword string = "airbyte_exporter"
@@ -46,6 +47,7 @@ var (
 	}
 
 	databaseAddr     string
+	databaseSSLMode  string
 	databaseName     string
 	databaseUser     string
 	databasePassword string
@@ -87,11 +89,12 @@ func NewExporterCommand() *cobra.Command {
 
 			// Database connection pool
 			databaseURI := fmt.Sprintf(
-				"postgres://%s:%s@%s/%s?sslmode=disable",
+				"postgres://%s:%s@%s/%s?sslmode=%s",
 				databaseUser,
 				databasePassword,
 				databaseAddr,
 				databaseName,
+				databaseSSLMode,
 			)
 
 			db, err := sqlx.Connect(databaseDriver, databaseURI)
@@ -143,6 +146,12 @@ func NewExporterCommand() *cobra.Command {
 		"db-addr",
 		defaultDatabaseAddr,
 		"Database address (host:port)",
+	)
+	cmd.PersistentFlags().StringVar(
+		&databaseSSLMode,
+		"db-sslmode",
+		defaultDatabaseSSLMode,
+		"Database sslmode",
 	)
 	cmd.PersistentFlags().StringVar(
 		&databaseName,
