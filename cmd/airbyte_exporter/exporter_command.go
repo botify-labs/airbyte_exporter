@@ -6,6 +6,7 @@ package main
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -87,7 +88,10 @@ func NewExporterCommand() *cobra.Command {
 			log.Info().Str("log_level", logLevelValue).Msg("setting log level")
 			zerolog.SetGlobalLevel(logLevel)
 
-			// Database connection pool
+			// Encode the database password with percent encoding in case it contains special characters.
+			// https://www.postgresql.org/docs/current/libpq-connect.html
+			// https://datatracker.ietf.org/doc/html/rfc3986#section-2.1
+			databasePassword = url.QueryEscape(databasePassword)
 			databaseURI := fmt.Sprintf(
 				"postgres://%s:%s@%s/%s?sslmode=%s",
 				databaseUser,
@@ -97,6 +101,7 @@ func NewExporterCommand() *cobra.Command {
 				databaseSSLMode,
 			)
 
+			// Database connection pool
 			db, err := sqlx.Connect(databaseDriver, databaseURI)
 			if err != nil {
 				log.Error().
