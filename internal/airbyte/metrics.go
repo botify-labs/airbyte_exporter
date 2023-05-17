@@ -7,7 +7,13 @@ package airbyte
 // Metrics represents available Airbyte metrics.
 type Metrics struct {
 	// Airbyte jobs
-	JobPending       uint
-	JobRunning       uint
-	JobRunningOrphan uint
+	JobsPending []JobStatusCount
+	JobsRunning []JobStatusCount
+}
+
+// JobStatusCount holds a count of Airbyte jobs, grouped by source name and status.
+type JobStatusCount struct {
+	Source string `db:"source"`
+	Status string `db:"status"`
+	Count  uint   `db:"count"`
 }

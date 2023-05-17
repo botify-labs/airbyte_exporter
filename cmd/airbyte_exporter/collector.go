@@ -21,9 +21,8 @@ type collector struct {
 	airbyteService *airbyte.Service
 
 	// Airbyte jobs
-	jobPending       *prometheus.Desc
-	jobRunning       *prometheus.Desc
-	jobRunningOrphan *prometheus.Desc
+	jobsPending *prometheus.Desc
+	jobsRunning *prometheus.Desc
 }
 
 // NewCollector initializes and returns a Prometheus collector for Airbyte metrics.
@@ -31,22 +30,16 @@ func NewCollector(airbyteService *airbyte.Service) *collector {
 	return &collector{
 		airbyteService: airbyteService,
 
-		jobPending: prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "", "job_pending"),
+		jobsPending: prometheus.NewDesc(
+			prometheus.BuildFQName(namespace, "", "jobs_pending"),
 			"Pending jobs",
-			nil,
+			[]string{"source"},
 			nil,
 		),
-		jobRunning: prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "", "job_running"),
+		jobsRunning: prometheus.NewDesc(
+			prometheus.BuildFQName(namespace, "", "jobs_running"),
 			"Running jobs",
-			nil,
-			nil,
-		),
-		jobRunningOrphan: prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "", "job_running_orphan"),
-			"Running jobs associated with an inactive or deprecated connection",
-			nil,
+			[]string{"source"},
 			nil,
 		),
 	}
@@ -55,9 +48,8 @@ func NewCollector(airbyteService *airbyte.Service) *collector {
 // Describe publishes the description of each Airbyte metric to a metrics
 // channel.
 func (c *collector) Describe(ch chan<- *prometheus.Desc) {
-	ch <- c.jobPending
-	ch <- c.jobRunning
-	ch <- c.jobRunningOrphan
+	ch <- c.jobsPending
+	ch <- c.jobsRunning
 }
 
 // Collect gathers metrics from Airbyte.
@@ -68,7 +60,11 @@ func (c *collector) Collect(ch chan<- prometheus.Metric) {
 	}
 
 	// Gauges
-	ch <- prometheus.MustNewConstMetric(c.jobPending, prometheus.GaugeValue, float64(metrics.JobPending))
-	ch <- prometheus.MustNewConstMetric(c.jobRunning, prometheus.GaugeValue, float64(metrics.JobRunning))
-	ch <- prometheus.MustNewConstMetric(c.jobRunningOrphan, prometheus.GaugeValue, float64(metrics.JobRunningOrphan))
+	for _, jobsPending := range metrics.JobsPending {
+		ch <- prometheus.MustNewConstMetric(c.jobsPending, prometheus.GaugeValue, float64(jobsPending.Count), jobsPending.Source)
+	}
+
+	for _, jobsRunning := range metrics.JobsRunning {
+		ch <- prometheus.MustNewConstMetric(c.jobsRunning, prometheus.GaugeValue, float64(jobsRunning.Count), jobsRunning.Source)
+	}
 }

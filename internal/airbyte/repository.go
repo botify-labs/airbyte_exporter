@@ -19,67 +19,59 @@ func NewRepository(db *sqlx.DB) *Repository {
 	}
 }
 
-func (r *Repository) JobPending() (count uint, err error) {
-	query := `
-	SELECT COUNT(*)
-	FROM jobs
-	JOIN connection
-	ON   CAST(connection.id AS VARCHAR(255)) = jobs.scope
-	WHERE jobs.status = 'pending'
-	`
-
-	err = r.db.Get(
-		&count,
-		query,
-	)
+// jobStatusCountQuery provides a helper to run a SQL query that returns rows to be marshaled
+// as a slice of JobStatusCount.
+func (r *Repository) jobStatusCountQuery(query string) ([]JobStatusCount, error) {
+	rows, err := r.db.Queryx(query)
 	if err != nil {
-		return 0, err
+		return []JobStatusCount{}, err
 	}
 
-	return count, nil
+	var jobStatuses []JobStatusCount
+
+	for rows.Next() {
+		var jobStatus JobStatusCount
+
+		if err := rows.StructScan(&jobStatus); err != nil {
+			return []JobStatusCount{}, err
+		}
+
+		jobStatuses = append(jobStatuses, jobStatus)
+	}
+
+	return jobStatuses, nil
 }
 
-func (r *Repository) JobRunning() (count uint, err error) {
+// JobsPendingBySourceName returns the count of pending Airbyte jobs, grouped by source and status.
+func (r *Repository) JobsPendingBySourceName() ([]JobStatusCount, error) {
 	query := `
-	SELECT COUNT(*)
-	FROM jobs
-	JOIN connection
-	ON   CAST(connection.id AS VARCHAR(255)) = jobs.scope
-	JOIN attempts
-	ON   attempts.job_id = jobs.id
-	WHERE jobs.status = 'running'
-	AND   attempts.status = 'running'
-	AND   connection.status = 'active'
+	SELECT ad.name as source, j.status, COUNT(j.status)
+	FROM jobs j
+	LEFT JOIN connection c ON CAST(c.id AS VARCHAR(255)) = j.scope
+	LEFT JOIN actor a ON c.source_id = a.id
+	LEFT JOIN actor_definition ad ON a.actor_definition_id = ad.id
+	WHERE j.status = 'pending'
+	GROUP BY ad.name, j.status
+	ORDER BY ad.name, j.status
 	`
 
-	err = r.db.Get(
-		&count,
-		query,
-	)
-	if err != nil {
-		return 0, err
-	}
-
-	return count, nil
+	return r.jobStatusCountQuery(query)
 }
 
-func (r *Repository) JobRunningOrphan() (count uint, err error) {
+// JobsRunningBySourceName returns the count of running Airbyte jobs, grouped by source and status.
+func (r *Repository) JobsRunningBySourceName() ([]JobStatusCount, error) {
 	query := `
-	SELECT COUNT(*)
-	FROM jobs
-	JOIN connection
-	ON   CAST(connection.id AS VARCHAR(255)) = jobs.scope
-	WHERE jobs.status = 'running'
-	AND   connection.status != 'active'
+	SELECT ad.name as source, j.status, COUNT(j.status)
+	FROM jobs j
+	LEFT JOIN attempts att ON att.job_id = j.id
+	LEFT JOIN connection c ON j.scope = CAST(c.id AS VARCHAR(255))
+	LEFT JOIN actor a ON c.source_id = a.id
+	LEFT JOIN actor_definition ad ON a.actor_definition_id = ad.id
+	WHERE j.status = 'running'
+	AND   att.status = 'running'
+	GROUP BY ad.name, j.status
+	ORDER BY ad.name, j.status
 	`
 
-	err = r.db.Get(
-		&count,
-		query,
-	)
-	if err != nil {
-		return 0, err
-	}
-
-	return count, nil
+	return r.jobStatusCountQuery(query)
 }
