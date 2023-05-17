@@ -18,23 +18,30 @@ func NewService(r *Repository) *Service {
 
 // GatherMetrics gathers and returns metrics from Airbyte's PostgreSQL database.
 func (s *Service) GatherMetrics() (*Metrics, error) {
-	jobPending, err := s.r.JobPending()
+	connections, err := s.r.ConnectionsCount()
 	if err != nil {
 		return &Metrics{}, err
 	}
 
-	jobRunning, err := s.r.JobRunning()
+	jobsCompleted, err := s.r.JobsCompletedCount()
 	if err != nil {
 		return &Metrics{}, err
 	}
-	jobRunningOrphan, err := s.r.JobRunningOrphan()
+
+	jobsPending, err := s.r.JobsPendingCount()
+	if err != nil {
+		return &Metrics{}, err
+	}
+
+	jobsRunning, err := s.r.JobsRunningCount()
 	if err != nil {
 		return &Metrics{}, err
 	}
 
 	return &Metrics{
-		JobPending:       jobPending,
-		JobRunning:       jobRunning,
-		JobRunningOrphan: jobRunningOrphan,
+		Connections:   connections,
+		JobsCompleted: jobsCompleted,
+		JobsPending:   jobsPending,
+		JobsRunning:   jobsRunning,
 	}, nil
 }

@@ -19,67 +19,120 @@ func NewRepository(db *sqlx.DB) *Repository {
 	}
 }
 
-func (r *Repository) JobPending() (count uint, err error) {
-	query := `
-	SELECT COUNT(*)
-	FROM jobs
-	JOIN connection
-	ON   CAST(connection.id AS VARCHAR(255)) = jobs.scope
-	WHERE jobs.status = 'pending'
-	`
-
-	err = r.db.Get(
-		&count,
-		query,
-	)
+// countQuery provides a helper to run a SQL query that returns rows to be marshaled
+// as a slice of ConnectionCount.
+func (r *Repository) connectionCountQuery(query string) ([]ConnectionCount, error) {
+	rows, err := r.db.Queryx(query)
 	if err != nil {
-		return 0, err
+		return []ConnectionCount{}, err
 	}
 
-	return count, nil
+	var connectionCounts []ConnectionCount
+
+	for rows.Next() {
+		var connectionCount ConnectionCount
+
+		if err := rows.StructScan(&connectionCount); err != nil {
+			return []ConnectionCount{}, err
+		}
+
+		connectionCounts = append(connectionCounts, connectionCount)
+	}
+
+	return connectionCounts, nil
 }
 
-func (r *Repository) JobRunning() (count uint, err error) {
-	query := `
-	SELECT COUNT(*)
-	FROM jobs
-	JOIN connection
-	ON   CAST(connection.id AS VARCHAR(255)) = jobs.scope
-	JOIN attempts
-	ON   attempts.job_id = jobs.id
-	WHERE jobs.status = 'running'
-	AND   attempts.status = 'running'
-	AND   connection.status = 'active'
-	`
-
-	err = r.db.Get(
-		&count,
-		query,
-	)
+// jobCountQuery provides a helper to run a SQL query that returns rows to be marshaled
+// as a slice of JobCount.
+func (r *Repository) jobCountQuery(query string) ([]JobCount, error) {
+	rows, err := r.db.Queryx(query)
 	if err != nil {
-		return 0, err
+		return []JobCount{}, err
 	}
 
-	return count, nil
+	var jobCounts []JobCount
+
+	for rows.Next() {
+		var jobCount JobCount
+
+		if err := rows.StructScan(&jobCount); err != nil {
+			return []JobCount{}, err
+		}
+
+		jobCounts = append(jobCounts, jobCount)
+	}
+
+	return jobCounts, nil
 }
 
-func (r *Repository) JobRunningOrphan() (count uint, err error) {
+// ConnectionsCount returns the count of Airbyte connections, grouped by destination, source and status.
+func (r *Repository) ConnectionsCount() ([]ConnectionCount, error) {
 	query := `
-	SELECT COUNT(*)
-	FROM jobs
-	JOIN connection
-	ON   CAST(connection.id AS VARCHAR(255)) = jobs.scope
-	WHERE jobs.status = 'running'
-	AND   connection.status != 'active'
+	SELECT ad1.name as destination, ad2.name as source, c.status, COUNT(c.status)
+	FROM connection c
+	LEFT JOIN actor a1 ON c.destination_id = a1.id
+	LEFT JOIN actor_definition ad1 ON a1.actor_definition_id = ad1.id
+	LEFT JOIN actor a2 ON c.source_id = a2.id
+	LEFT JOIN actor_definition ad2 ON a2.actor_definition_id = ad2.id
+	GROUP BY ad1.name, ad2.name, c.status
+	ORDER BY ad1.name, ad2.name, c.status
 	`
 
-	err = r.db.Get(
-		&count,
-		query,
-	)
-	if err != nil {
-		return 0, err
-	}
+	return r.connectionCountQuery(query)
+}
 
-	return count, nil
+// JobsCompletedCount returns the count of completed Airbyte jobs, grouped by destination, source, type and status.
+func (r *Repository) JobsCompletedCount() ([]JobCount, error) {
+	query := `
+	SELECT ad1.name as destination, ad2.name as source, j.config_type, j.status, COUNT(j.status)
+	FROM jobs j
+	LEFT JOIN connection c ON j.scope = CAST(c.id AS VARCHAR(255))
+	LEFT JOIN actor a1 ON c.destination_id = a1.id
+	LEFT JOIN actor_definition ad1 ON a1.actor_definition_id = ad1.id
+	LEFT JOIN actor a2 ON c.source_id = a2.id
+	LEFT JOIN actor_definition ad2 ON a2.actor_definition_id = ad2.id
+	WHERE j.status IN ('cancelled', 'failed', 'succeeded')
+	GROUP BY ad1.name, ad2.name, j.config_type, j.status
+	ORDER BY ad1.name, ad2.name, j.config_type, j.status
+	`
+
+	return r.jobCountQuery(query)
+}
+
+// JobsPendingCount returns the count of pending Airbyte jobs, grouped by destination, source and type.
+func (r *Repository) JobsPendingCount() ([]JobCount, error) {
+	query := `
+	SELECT ad1.name as destination, ad2.name as source, j.config_type, j.status, COUNT(j.status)
+	FROM jobs j
+	LEFT JOIN connection c ON CAST(c.id AS VARCHAR(255)) = j.scope
+	LEFT JOIN actor a1 ON c.destination_id = a1.id
+	LEFT JOIN actor_definition ad1 ON a1.actor_definition_id = ad1.id
+	LEFT JOIN actor a2 ON c.source_id = a2.id
+	LEFT JOIN actor_definition ad2 ON a2.actor_definition_id = ad2.id
+	WHERE j.status = 'pending'
+	GROUP BY ad1.name, ad2.name, j.config_type, j.status
+	ORDER BY ad1.name, ad2.name, j.config_type, j.status
+	`
+
+	return r.jobCountQuery(query)
+}
+
+// JobsRunningCount returns the count of running Airbyte jobs, grouped by destination, source and type.
+func (r *Repository) JobsRunningCount() ([]JobCount, error) {
+	query := `
+	SELECT ad1.name as destination, ad2.name as source, j.config_type, j.status, COUNT(j.status)
+	FROM jobs j
+	LEFT JOIN attempts att ON att.job_id = j.id
+	LEFT JOIN connection c ON j.scope = CAST(c.id AS VARCHAR(255))
+	LEFT JOIN actor a1 ON c.destination_id = a1.id
+	LEFT JOIN actor_definition ad1 ON a1.actor_definition_id = ad1.id
+	LEFT JOIN actor a2 ON c.source_id = a2.id
+	LEFT JOIN actor_definition ad2 ON a2.actor_definition_id = ad2.id
+	WHERE j.status = 'running'
+	AND   att.status = 'running'
+	GROUP BY ad1.name, ad2.name, j.config_type, j.status
+	ORDER BY ad1.name, ad2.name, j.config_type, j.status
+	`
+
+	return r.jobCountQuery(query)
 }
