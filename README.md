@@ -5,6 +5,7 @@
 
 ## Metrics exposed
 ### Counters
+- `airbyte_connections_total{source, status}`
 - `airbyte_jobs_completed_total{source, status}`
 
 ### Gauges
