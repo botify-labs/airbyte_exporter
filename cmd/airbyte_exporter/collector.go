@@ -43,19 +43,19 @@ func NewCollector(airbyteService *airbyte.Service) *collector {
 		jobsCompleted: prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "", "jobs_completed_total"),
 			"Completed jobs (total)",
-			[]string{"destination_connector", "source_connector", "status"},
+			[]string{"destination_connector", "source_connector", "type", "status"},
 			nil,
 		),
 		jobsPending: prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "", "jobs_pending"),
 			"Pending jobs",
-			[]string{"destination_connector", "source_connector"},
+			[]string{"destination_connector", "source_connector", "type"},
 			nil,
 		),
 		jobsRunning: prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "", "jobs_running"),
 			"Running jobs",
-			[]string{"destination_connector", "source_connector"},
+			[]string{"destination_connector", "source_connector", "type"},
 			nil,
 		),
 	}
@@ -96,6 +96,7 @@ func (c *collector) Collect(ch chan<- prometheus.Metric) {
 			float64(jobsCompleted.Count),
 			jobsCompleted.DestinationConnector,
 			jobsCompleted.SourceConnector,
+			jobsCompleted.Type,
 			jobsCompleted.Status,
 		)
 	}
@@ -108,6 +109,7 @@ func (c *collector) Collect(ch chan<- prometheus.Metric) {
 			float64(jobsPending.Count),
 			jobsPending.DestinationConnector,
 			jobsPending.SourceConnector,
+			jobsPending.Type,
 		)
 	}
 
@@ -118,6 +120,7 @@ func (c *collector) Collect(ch chan<- prometheus.Metric) {
 			float64(jobsRunning.Count),
 			jobsRunning.DestinationConnector,
 			jobsRunning.SourceConnector,
+			jobsRunning.Type,
 		)
 	}
 }
