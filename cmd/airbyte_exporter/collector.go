@@ -36,26 +36,26 @@ func NewCollector(airbyteService *airbyte.Service) *collector {
 		connections: prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "", "connections_total"),
 			"Connections (total)",
-			[]string{"source", "status"},
+			[]string{"destination_connector", "source_connector", "status"},
 			nil,
 		),
 
 		jobsCompleted: prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "", "jobs_completed_total"),
 			"Completed jobs (total)",
-			[]string{"source", "status"},
+			[]string{"destination_connector", "source_connector", "status"},
 			nil,
 		),
 		jobsPending: prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "", "jobs_pending"),
 			"Pending jobs",
-			[]string{"source"},
+			[]string{"destination_connector", "source_connector"},
 			nil,
 		),
 		jobsRunning: prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "", "jobs_running"),
 			"Running jobs",
-			[]string{"source"},
+			[]string{"destination_connector", "source_connector"},
 			nil,
 		),
 	}
@@ -83,7 +83,8 @@ func (c *collector) Collect(ch chan<- prometheus.Metric) {
 			c.connections,
 			prometheus.CounterValue,
 			float64(connections.Count),
-			connections.Source,
+			connections.DestinationConnector,
+			connections.SourceConnector,
 			connections.Status,
 		)
 	}
@@ -93,17 +94,30 @@ func (c *collector) Collect(ch chan<- prometheus.Metric) {
 			c.jobsCompleted,
 			prometheus.CounterValue,
 			float64(jobsCompleted.Count),
-			jobsCompleted.Source,
+			jobsCompleted.DestinationConnector,
+			jobsCompleted.SourceConnector,
 			jobsCompleted.Status,
 		)
 	}
 
 	// Gauges
 	for _, jobsPending := range metrics.JobsPending {
-		ch <- prometheus.MustNewConstMetric(c.jobsPending, prometheus.GaugeValue, float64(jobsPending.Count), jobsPending.Source)
+		ch <- prometheus.MustNewConstMetric(
+			c.jobsPending,
+			prometheus.GaugeValue,
+			float64(jobsPending.Count),
+			jobsPending.DestinationConnector,
+			jobsPending.SourceConnector,
+		)
 	}
 
 	for _, jobsRunning := range metrics.JobsRunning {
-		ch <- prometheus.MustNewConstMetric(c.jobsRunning, prometheus.GaugeValue, float64(jobsRunning.Count), jobsRunning.Source)
+		ch <- prometheus.MustNewConstMetric(
+			c.jobsRunning,
+			prometheus.GaugeValue,
+			float64(jobsRunning.Count),
+			jobsRunning.DestinationConnector,
+			jobsRunning.SourceConnector,
+		)
 	}
 }

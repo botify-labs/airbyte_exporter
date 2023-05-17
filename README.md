@@ -5,12 +5,12 @@
 
 ## Metrics exposed
 ### Counters
-- `airbyte_connections_total{source, status}`
-- `airbyte_jobs_completed_total{source, status}`
+- `airbyte_connections_total{destination_connector, source_connector, status}`
+- `airbyte_jobs_completed_total{destination_connector, source_connector, status}`
 
 ### Gauges
-- `airbyte_jobs_pending{source}`
-- `airbyte_jobs_running{source}`
+- `airbyte_jobs_pending{destination_connector, source_connector}`
+- `airbyte_jobs_running{destination_connector, source_connector}`
 
 ## Change Log
 See [CHANGELOG](./CHANGELOG.md)
