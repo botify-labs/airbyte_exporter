@@ -4,6 +4,9 @@
 <img src="https://github.com/virtualtam/airbyte_exporter/actions/workflows/docker.yaml/badge.svg?branch=main" alt="Docker image workflow status">
 
 ## Metrics exposed
+### Counters
+- `airbyte_jobs_completed_total{source, status}`
+
 ### Gauges
 - `airbyte_jobs_pending{source}`
 - `airbyte_jobs_running{source}`

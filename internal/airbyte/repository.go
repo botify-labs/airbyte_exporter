@@ -42,6 +42,22 @@ func (r *Repository) jobStatusCountQuery(query string) ([]JobStatusCount, error)
 	return jobStatuses, nil
 }
 
+// JobsCompletedBySourceName returns the count of completed Airbyte jobs, grouped by source and status.
+func (r *Repository) JobsCompletedBySourceName() ([]JobStatusCount, error) {
+	query := `
+	SELECT ad.name as source, j.status, COUNT(j.status)
+	FROM jobs j
+	LEFT JOIN connection c ON j.scope = CAST(c.id AS VARCHAR(255))
+	LEFT JOIN actor a ON c.source_id = a.id
+	LEFT JOIN actor_definition ad ON a.actor_definition_id = ad.id
+	WHERE j.status IN ('cancelled', 'failed', 'succeeded')
+	GROUP BY ad.name, j.status
+	ORDER BY ad.name, j.status
+	`
+
+	return r.jobStatusCountQuery(query)
+}
+
 // JobsPendingBySourceName returns the count of pending Airbyte jobs, grouped by source and status.
 func (r *Repository) JobsPendingBySourceName() ([]JobStatusCount, error) {
 	query := `
