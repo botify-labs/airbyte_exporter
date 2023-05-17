@@ -70,10 +70,10 @@ func (r *Repository) ConnectionsCount() ([]ConnectionCount, error) {
 	query := `
 	SELECT ad1.name as destination, ad2.name as source, c.status, COUNT(c.status)
 	FROM connection c
-	LEFT JOIN actor a1 ON c.destination_id = a1.id
-	LEFT JOIN actor_definition ad1 ON a1.actor_definition_id = ad1.id
-	LEFT JOIN actor a2 ON c.source_id = a2.id
-	LEFT JOIN actor_definition ad2 ON a2.actor_definition_id = ad2.id
+	JOIN actor a1 ON c.destination_id = a1.id
+	JOIN actor_definition ad1 ON a1.actor_definition_id = ad1.id
+	JOIN actor a2 ON c.source_id = a2.id
+	JOIN actor_definition ad2 ON a2.actor_definition_id = ad2.id
 	GROUP BY ad1.name, ad2.name, c.status
 	ORDER BY ad1.name, ad2.name, c.status
 	`
@@ -86,11 +86,11 @@ func (r *Repository) JobsCompletedCount() ([]JobCount, error) {
 	query := `
 	SELECT ad1.name as destination, ad2.name as source, j.config_type, j.status, COUNT(j.status)
 	FROM jobs j
-	LEFT JOIN connection c ON j.scope = CAST(c.id AS VARCHAR(255))
-	LEFT JOIN actor a1 ON c.destination_id = a1.id
-	LEFT JOIN actor_definition ad1 ON a1.actor_definition_id = ad1.id
-	LEFT JOIN actor a2 ON c.source_id = a2.id
-	LEFT JOIN actor_definition ad2 ON a2.actor_definition_id = ad2.id
+	JOIN connection c ON j.scope = CAST(c.id AS VARCHAR(255))
+	JOIN actor a1 ON c.destination_id = a1.id
+	JOIN actor_definition ad1 ON a1.actor_definition_id = ad1.id
+	JOIN actor a2 ON c.source_id = a2.id
+	JOIN actor_definition ad2 ON a2.actor_definition_id = ad2.id
 	WHERE j.status IN ('cancelled', 'failed', 'succeeded')
 	GROUP BY ad1.name, ad2.name, j.config_type, j.status
 	ORDER BY ad1.name, ad2.name, j.config_type, j.status
@@ -104,11 +104,11 @@ func (r *Repository) JobsPendingCount() ([]JobCount, error) {
 	query := `
 	SELECT ad1.name as destination, ad2.name as source, j.config_type, j.status, COUNT(j.status)
 	FROM jobs j
-	LEFT JOIN connection c ON CAST(c.id AS VARCHAR(255)) = j.scope
-	LEFT JOIN actor a1 ON c.destination_id = a1.id
-	LEFT JOIN actor_definition ad1 ON a1.actor_definition_id = ad1.id
-	LEFT JOIN actor a2 ON c.source_id = a2.id
-	LEFT JOIN actor_definition ad2 ON a2.actor_definition_id = ad2.id
+	JOIN connection c ON CAST(c.id AS VARCHAR(255)) = j.scope
+	JOIN actor a1 ON c.destination_id = a1.id
+	JOIN actor_definition ad1 ON a1.actor_definition_id = ad1.id
+	JOIN actor a2 ON c.source_id = a2.id
+	JOIN actor_definition ad2 ON a2.actor_definition_id = ad2.id
 	WHERE j.status = 'pending'
 	GROUP BY ad1.name, ad2.name, j.config_type, j.status
 	ORDER BY ad1.name, ad2.name, j.config_type, j.status
@@ -122,12 +122,12 @@ func (r *Repository) JobsRunningCount() ([]JobCount, error) {
 	query := `
 	SELECT ad1.name as destination, ad2.name as source, j.config_type, j.status, COUNT(j.status)
 	FROM jobs j
-	LEFT JOIN attempts att ON att.job_id = j.id
-	LEFT JOIN connection c ON j.scope = CAST(c.id AS VARCHAR(255))
-	LEFT JOIN actor a1 ON c.destination_id = a1.id
-	LEFT JOIN actor_definition ad1 ON a1.actor_definition_id = ad1.id
-	LEFT JOIN actor a2 ON c.source_id = a2.id
-	LEFT JOIN actor_definition ad2 ON a2.actor_definition_id = ad2.id
+	JOIN attempts att ON att.job_id = j.id
+	JOIN connection c ON j.scope = CAST(c.id AS VARCHAR(255))
+	JOIN actor a1 ON c.destination_id = a1.id
+	JOIN actor_definition ad1 ON a1.actor_definition_id = ad1.id
+	JOIN actor a2 ON c.source_id = a2.id
+	JOIN actor_definition ad2 ON a2.actor_definition_id = ad2.id
 	WHERE j.status = 'running'
 	AND   att.status = 'running'
 	GROUP BY ad1.name, ad2.name, j.config_type, j.status
