@@ -3,6 +3,8 @@
 <img src="https://github.com/botify-labs/airbyte_exporter/actions/workflows/ci.yaml/badge.svg?branch=main" alt="Continuous integration workflow status">
 <img src="https://github.com/botify-labs/airbyte_exporter/actions/workflows/docker.yaml/badge.svg?branch=main" alt="Docker image workflow status">
 
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/botify-helm-charts)](https://artifacthub.io/packages/search?repo=botify-helm-charts)
+
 ## Metrics exposed
 ### Counters
 - `airbyte_connections_total{destination_connector, source_connector, status}`
@@ -103,10 +105,10 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO airbyte_expo
 ```
 
 ## Running
+
+### Running with Docker
 See [`airbyte_exporter` container packages](https://github.com/botify-labs/airbyte_exporter/pkgs/container/airbyte_exporter)
 for a list of available Docker image tags.
-
-### Docker
 
 Pull the Docker image:
 
@@ -126,46 +128,15 @@ $ docker run \
     ghcr.io/botify-labs/airbyte_exporter:latest
 ```
 
-### Helm Chart for Kubernetes
+### Deploying to Kubernetes with Helm
 
 See instructions on Artifact Hub for [botify-helm-charts/prometheus-airbyte-exporter](https://artifacthub.io/packages/helm/botify-helm-charts/prometheus-airbyte-exporter).
 
-## Building
-
-Get the sources:
-
-```shell
-$ git clone https://github.com/botify-labs/airbyte_exporter.git
-$ cd airbyte_exporter
-```
-
-Run linters:
-
-```shell
-$ make lint
-```
-
-Build the parser and exporter:
-
-```shell
-$ make build
-```
-
-Build platform-specific binaries with [Promu](https://github.com/prometheus/promu):
-
-```shell
-$ promu crossbuild
-```
-
-Build and archive platform-specific binaries:
-
-```shell
-$ promu crossbuild
-$ promu crossbuild tarballs
-```
-
 ## Change Log
 See [CHANGELOG](./CHANGELOG.md)
+
+## Contributing
+See [CONTRIBUTING](./CONTRIBUTING.md)
 
 ## License
 `airbyte_exporter` is licensed under the MIT License.
