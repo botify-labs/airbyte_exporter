@@ -16,8 +16,9 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
-	"github.com/virtualtam/airbyte_exporter/internal/airbyte"
 	"github.com/virtualtam/venom"
+
+	"github.com/botify-labs/airbyte_exporter/internal/airbyte"
 )
 
 const (

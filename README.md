@@ -1,7 +1,7 @@
 # Airbyte Prometheus Exporter
 
-<img src="https://github.com/virtualtam/airbyte_exporter/actions/workflows/ci.yaml/badge.svg?branch=main" alt="Continuous integration workflow status">
-<img src="https://github.com/virtualtam/airbyte_exporter/actions/workflows/docker.yaml/badge.svg?branch=main" alt="Docker image workflow status">
+<img src="https://github.com/botify-labs/airbyte_exporter/actions/workflows/ci.yaml/badge.svg?branch=main" alt="Continuous integration workflow status">
+<img src="https://github.com/botify-labs/airbyte_exporter/actions/workflows/docker.yaml/badge.svg?branch=main" alt="Docker image workflow status">
 
 ## Metrics exposed
 ### Counters
@@ -103,7 +103,7 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO airbyte_expo
 ```
 
 ## Running
-See [`airbyte_exporter` container packages](https://github.com/virtualtam/airbyte_exporter/pkgs/container/airbyte_exporter)
+See [`airbyte_exporter` container packages](https://github.com/botify-labs/airbyte_exporter/pkgs/container/airbyte_exporter)
 for a list of available Docker image tags.
 
 ### Docker
@@ -111,7 +111,7 @@ for a list of available Docker image tags.
 Pull the Docker image:
 
 ```shell
-$ docker pull ghcr.io/virtualtam/airbyte_exporter:latest
+$ docker pull ghcr.io/botify-labs/airbyte_exporter:latest
 ```
 
 Run the exporter:
@@ -123,20 +123,20 @@ $ docker run \
     -e AIRBYTE_EXPORTER_DB_HOST=postgresql \
     -e AIRBYTE_EXPORTER_DB_PASSWORD=ch4ng3m3 \
     -p 8080:8080
-    ghcr.io/virtualtam/airbyte_exporter:latest
+    ghcr.io/botify-labs/airbyte_exporter:latest
 ```
 
 ### Helm Chart for Kubernetes
 
-See instructions on Artifact Hub for [virtualtam/prometheus-airbyte-exporter](https://artifacthub.io/packages/helm/virtualtam/prometheus-airbyte-exporter).
+See instructions on Artifact Hub for [botify-helm-charts/prometheus-airbyte-exporter](https://artifacthub.io/packages/helm/botify-helm-charts/prometheus-airbyte-exporter).
 
 ## Building
 
 Get the sources:
 
 ```shell
-$ git clone https://github.com/virtualtam/airbyte_exporter.git
-$ cd ccache_exporter
+$ git clone https://github.com/botify-labs/airbyte_exporter.git
+$ cd airbyte_exporter
 ```
 
 Run linters:

@@ -1,4 +1,4 @@
-module github.com/virtualtam/airbyte_exporter
+module github.com/botify-labs/airbyte_exporter
 
 go 1.20
 

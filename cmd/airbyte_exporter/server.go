@@ -13,7 +13,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog/hlog"
 	"github.com/rs/zerolog/log"
-	"github.com/virtualtam/airbyte_exporter/internal/airbyte"
+
+	"github.com/botify-labs/airbyte_exporter/internal/airbyte"
 )
 
 const (
