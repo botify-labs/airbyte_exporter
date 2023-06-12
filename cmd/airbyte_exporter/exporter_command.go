@@ -18,7 +18,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/virtualtam/venom"
 
-	"github.com/botify-labs/airbyte_exporter/internal/airbyte"
+	"github.com/botify-labs/airbyte_exporter/v2/internal/airbyte"
 )
 
 const (

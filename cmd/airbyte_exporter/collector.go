@@ -8,7 +8,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog/log"
 
-	"github.com/botify-labs/airbyte_exporter/internal/airbyte"
+	"github.com/botify-labs/airbyte_exporter/v2/internal/airbyte"
 )
 
 const (

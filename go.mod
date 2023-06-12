@@ -1,4 +1,4 @@
-module github.com/botify-labs/airbyte_exporter
+module github.com/botify-labs/airbyte_exporter/v2
 
 go 1.20
 

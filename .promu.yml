@@ -2,7 +2,7 @@
 verbose: false
 
 repository:
-  path: github.com/botify-labs/airbyte_exporter
+  path: github.com/botify-labs/airbyte_exporter/v2
 
 go:
   # Whenever the Go version is updated here, .github/workflows/ci.yaml should also be updated.
