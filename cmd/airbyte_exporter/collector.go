@@ -22,6 +22,7 @@ type collector struct {
 
 	// Airbyte connections
 	connections *prometheus.Desc
+
 	// Airbyte jobs
 	jobsCompleted *prometheus.Desc
 	jobsPending   *prometheus.Desc
@@ -34,8 +35,8 @@ func NewCollector(airbyteService *airbyte.Service) *collector {
 		airbyteService: airbyteService,
 
 		connections: prometheus.NewDesc(
-			prometheus.BuildFQName(namespace, "", "connections_total"),
-			"Connections (total)",
+			prometheus.BuildFQName(namespace, "", "connections"),
+			"Connections",
 			[]string{"destination_connector", "source_connector", "status"},
 			nil,
 		),
@@ -78,17 +79,6 @@ func (c *collector) Collect(ch chan<- prometheus.Metric) {
 	}
 
 	// Counters
-	for _, connections := range metrics.Connections {
-		ch <- prometheus.MustNewConstMetric(
-			c.connections,
-			prometheus.CounterValue,
-			float64(connections.Count),
-			connections.DestinationConnector,
-			connections.SourceConnector,
-			connections.Status,
-		)
-	}
-
 	for _, jobsCompleted := range metrics.JobsCompleted {
 		ch <- prometheus.MustNewConstMetric(
 			c.jobsCompleted,
@@ -102,6 +92,17 @@ func (c *collector) Collect(ch chan<- prometheus.Metric) {
 	}
 
 	// Gauges
+	for _, connections := range metrics.Connections {
+		ch <- prometheus.MustNewConstMetric(
+			c.connections,
+			prometheus.GaugeValue,
+			float64(connections.Count),
+			connections.DestinationConnector,
+			connections.SourceConnector,
+			connections.Status,
+		)
+	}
+
 	for _, jobsPending := range metrics.JobsPending {
 		ch <- prometheus.MustNewConstMetric(
 			c.jobsPending,
