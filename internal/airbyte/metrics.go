@@ -9,6 +9,10 @@ type Metrics struct {
 	// Airbyte connections
 	Connections []ConnectionCount
 
+	// Airbyte connectors
+	Sources      []ActorCount
+	Destinations []ActorCount
+
 	// Airbyte jobs
 	JobsCompleted []JobCount
 	JobsPending   []JobCount
@@ -21,6 +25,13 @@ type ConnectionCount struct {
 	SourceConnector      string `db:"source"`
 	Status               string `db:"status"`
 	Count                uint   `db:"count"`
+}
+
+// ActorCount holds a count of Airbyte actors, grouped by actor connector and status.
+type ActorCount struct {
+	ActorConnector string `db:"actor"`
+	Tombstone      bool   `db:"tombstone"`
+	Count          uint   `db:"count"`
 }
 
 // JobCount holds a count of Airbyte jobs, grouped by destination connector, source connector, type and status.

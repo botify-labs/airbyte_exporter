@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [v2.1.0](https://github.com/botify-labs/airbyte_exporter/releases/tag/v2.1.0) - UNRELEASED
 
+### Added
+
+- Expose source and destination status
+
 ### Changed
 
 - Expose connection status as a gauge instead of a counter

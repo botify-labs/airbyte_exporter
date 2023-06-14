@@ -19,7 +19,30 @@ func NewRepository(db *sqlx.DB) *Repository {
 	}
 }
 
-// countQuery provides a helper to run a SQL query that returns rows to be marshaled
+// actorCountQuery provides a helper to run a SQL query that returns rows to be marshaled
+// as a slice of ActorCount.
+func (r *Repository) actorCountQuery(query string) ([]ActorCount, error) {
+	rows, err := r.db.Queryx(query)
+	if err != nil {
+		return []ActorCount{}, err
+	}
+
+	var actorCounts []ActorCount
+
+	for rows.Next() {
+		var actorCount ActorCount
+
+		if err := rows.StructScan(&actorCount); err != nil {
+			return []ActorCount{}, err
+		}
+
+		actorCounts = append(actorCounts, actorCount)
+	}
+
+	return actorCounts, nil
+}
+
+// connectionCountQuery provides a helper to run a SQL query that returns rows to be marshaled
 // as a slice of ConnectionCount.
 func (r *Repository) connectionCountQuery(query string) ([]ConnectionCount, error) {
 	rows, err := r.db.Queryx(query)
@@ -79,6 +102,32 @@ func (r *Repository) ConnectionsCount() ([]ConnectionCount, error) {
 	`
 
 	return r.connectionCountQuery(query)
+}
+
+// SourcesCount returns the count of Airbyte sources, grouped by actor connector and status.
+func (r *Repository) SourcesCount() ([]ActorCount, error) {
+	query := `
+	SELECT ad.name as actor, a.tombstone, COUNT(a.tombstone)
+	FROM actor a
+	JOIN actor_definition ad ON a.actor_definition_id = ad.id
+	WHERE a.actor_type = 'source'
+	GROUP BY ad.name, a.tombstone
+	ORDER BY ad.name, a.tombstone
+	`
+	return r.actorCountQuery(query)
+}
+
+// DestinationsCount returns the count of Airbyte sources, grouped by actor connector and status.
+func (r *Repository) DestinationsCount() ([]ActorCount, error) {
+	query := `
+	SELECT ad.name as actor, a.tombstone, COUNT(a.tombstone)
+	FROM actor a
+	JOIN actor_definition ad ON a.actor_definition_id = ad.id
+	WHERE a.actor_type = 'destination'
+	GROUP BY ad.name, a.tombstone
+	ORDER BY ad.name, a.tombstone
+	`
+	return r.actorCountQuery(query)
 }
 
 // JobsCompletedCount returns the count of completed Airbyte jobs, grouped by destination, source, type and status.

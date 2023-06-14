@@ -11,6 +11,8 @@
 
 ### Gauges
 - `airbyte_connections{destination_connector, source_connector, status}`
+- `airbyte_sources{source_connector, tombstone}`
+- `airbyte_destinations{destination_connector, tombstone}`
 - `airbyte_jobs_pending{destination_connector, source_connector, type}`
 - `airbyte_jobs_running{destination_connector, source_connector, type}`
 

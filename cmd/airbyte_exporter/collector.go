@@ -5,6 +5,8 @@
 package main
 
 import (
+	"strconv"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog/log"
 
@@ -23,6 +25,10 @@ type collector struct {
 	// Airbyte connections
 	connections *prometheus.Desc
 
+	// Airbyte connectors
+	sources      *prometheus.Desc
+	destinations *prometheus.Desc
+
 	// Airbyte jobs
 	jobsCompleted *prometheus.Desc
 	jobsPending   *prometheus.Desc
@@ -38,6 +44,19 @@ func NewCollector(airbyteService *airbyte.Service) *collector {
 			prometheus.BuildFQName(namespace, "", "connections"),
 			"Connections",
 			[]string{"destination_connector", "source_connector", "status"},
+			nil,
+		),
+
+		sources: prometheus.NewDesc(
+			prometheus.BuildFQName(namespace, "", "sources"),
+			"Sources",
+			[]string{"source_connector", "tombstone"},
+			nil,
+		),
+		destinations: prometheus.NewDesc(
+			prometheus.BuildFQName(namespace, "", "destinations"),
+			"Destinations",
+			[]string{"destination_connector", "tombstone"},
 			nil,
 		),
 
@@ -66,6 +85,8 @@ func NewCollector(airbyteService *airbyte.Service) *collector {
 // channel.
 func (c *collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.connections
+	ch <- c.sources
+	ch <- c.destinations
 	ch <- c.jobsCompleted
 	ch <- c.jobsPending
 	ch <- c.jobsRunning
@@ -100,6 +121,26 @@ func (c *collector) Collect(ch chan<- prometheus.Metric) {
 			connections.DestinationConnector,
 			connections.SourceConnector,
 			connections.Status,
+		)
+	}
+
+	for _, sources := range metrics.Sources {
+		ch <- prometheus.MustNewConstMetric(
+			c.sources,
+			prometheus.GaugeValue,
+			float64(sources.Count),
+			sources.ActorConnector,
+			strconv.FormatBool(sources.Tombstone),
+		)
+	}
+
+	for _, destinations := range metrics.Destinations {
+		ch <- prometheus.MustNewConstMetric(
+			c.destinations,
+			prometheus.GaugeValue,
+			float64(destinations.Count),
+			destinations.ActorConnector,
+			strconv.FormatBool(destinations.Tombstone),
 		)
 	}
 
