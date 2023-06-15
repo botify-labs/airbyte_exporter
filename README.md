@@ -6,15 +6,17 @@
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/botify-helm-charts)](https://artifacthub.io/packages/search?repo=botify-helm-charts)
 
 ## Metrics exposed
-### Counters
-- `airbyte_jobs_completed_total{destination_connector, source_connector, type, status}`
 
-### Gauges
-- `airbyte_connections{destination_connector, source_connector, status}`
-- `airbyte_sources{source_connector, tombstone}`
-- `airbyte_destinations{destination_connector, tombstone}`
-- `airbyte_jobs_pending{destination_connector, source_connector, type}`
-- `airbyte_jobs_running{destination_connector, source_connector, type}`
+| Metric                                               | Type      | Labels                                                |
+| ---------------------------------------------------- | --------- | ----------------------------------------------------- |
+| `airbyte_jobs_completed_total`                       | Counter   | destination_connector, source_connector, type, status |
+| `airbyte_connections`                                | Gauge     | destination_connector, source_connector, status       |
+| `airbyte_sources`                                    | Gauge     | source_connector, tombstone                           |
+| `airbyte_destinations`                               | Gauge     | destination_connector, tombstone                      |
+| `airbyte_jobs_pending`                               | Gauge     | destination_connector, source_connector, type         |
+| `airbyte_jobs_running`                               | Gauge     | destination_connector, source_connector, type         |
+| `airbyte_connections_last_successful_sync_age_hours` | Histogram | destination_connector, source_connector               |
+
 
 ## Configuration
 `airbyte_exporter` can be configured via:

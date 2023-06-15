@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Added
 
 - Expose source and destination status
+- Expose an histogram for the age of the last successful sync attempt for connections
 
 ### Changed
 

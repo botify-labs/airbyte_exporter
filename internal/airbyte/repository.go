@@ -65,6 +65,29 @@ func (r *Repository) connectionCountQuery(query string) ([]ConnectionCount, erro
 	return connectionCounts, nil
 }
 
+// connectionSyncAgeQuery provides a helper to run a SQL query that returns rows to be marshaled
+// as a slice of ConnectionSyncAge.
+func (r *Repository) connectionSyncAgeQuery(query string) ([]ConnectionSyncAge, error) {
+	rows, err := r.db.Queryx(query)
+	if err != nil {
+		return []ConnectionSyncAge{}, err
+	}
+
+	var connectionSyncAges []ConnectionSyncAge
+
+	for rows.Next() {
+		var connectionSyncAge ConnectionSyncAge
+
+		if err := rows.StructScan(&connectionSyncAge); err != nil {
+			return []ConnectionSyncAge{}, err
+		}
+
+		connectionSyncAges = append(connectionSyncAges, connectionSyncAge)
+	}
+
+	return connectionSyncAges, nil
+}
+
 // jobCountQuery provides a helper to run a SQL query that returns rows to be marshaled
 // as a slice of JobCount.
 func (r *Repository) jobCountQuery(query string) ([]JobCount, error) {
@@ -102,6 +125,30 @@ func (r *Repository) ConnectionsCount() ([]ConnectionCount, error) {
 	`
 
 	return r.connectionCountQuery(query)
+}
+
+// ConnectionsLastSuccessfulSyncAge returns the age of the last successful sync job attempt
+// for active connections.
+func (r *Repository) ConnectionsLastSuccessfulSyncAge() ([]ConnectionSyncAge, error) {
+	query := `
+	WITH j AS (
+		SELECT scope, max(updated_at) AS updated_at
+		FROM  jobs
+		WHERE config_type = 'sync'
+		AND   status = 'succeeded'
+		GROUP BY scope
+	)
+	SELECT c.id, ad1.name as destination, ad2.name as source, EXTRACT(EPOCH FROM AGE(NOW(), j.updated_at))/3600 as hours
+	FROM connection c
+	JOIN j ON j.scope = CAST(c.id AS VARCHAR(255))
+	JOIN actor a1 ON c.destination_id = a1.id
+	JOIN actor_definition ad1 ON a1.actor_definition_id = ad1.id
+	JOIN actor a2 ON c.source_id = a2.id
+	JOIN actor_definition ad2 ON a2.actor_definition_id = ad2.id
+	WHERE c.status = 'active'
+	`
+
+	return r.connectionSyncAgeQuery(query)
 }
 
 // SourcesCount returns the count of Airbyte sources, grouped by actor connector and status.

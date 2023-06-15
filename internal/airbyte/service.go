@@ -23,6 +23,11 @@ func (s *Service) GatherMetrics() (*Metrics, error) {
 		return &Metrics{}, err
 	}
 
+	connectionsLastSuccessfulSyncAges, err := s.r.ConnectionsLastSuccessfulSyncAge()
+	if err != nil {
+		return &Metrics{}, err
+	}
+
 	sources, err := s.r.SourcesCount()
 	if err != nil {
 		return &Metrics{}, err
@@ -49,11 +54,12 @@ func (s *Service) GatherMetrics() (*Metrics, error) {
 	}
 
 	return &Metrics{
-		Connections:   connections,
-		Sources:       sources,
-		Destinations:  destinations,
-		JobsCompleted: jobsCompleted,
-		JobsPending:   jobsPending,
-		JobsRunning:   jobsRunning,
+		Connections:                       connections,
+		ConnectionsLastSuccessfulSyncAges: connectionsLastSuccessfulSyncAges,
+		Sources:                           sources,
+		Destinations:                      destinations,
+		JobsCompleted:                     jobsCompleted,
+		JobsPending:                       jobsPending,
+		JobsRunning:                       jobsRunning,
 	}, nil
 }
