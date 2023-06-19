@@ -46,7 +46,6 @@ func NewCollector(airbyteService *airbyte.Service) *collector {
 			[]string{"destination_connector", "source_connector", "status"},
 			nil,
 		),
-
 		sources: prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "", "sources"),
 			"Sources",
@@ -165,4 +164,36 @@ func (c *collector) Collect(ch chan<- prometheus.Metric) {
 			jobsRunning.Type,
 		)
 	}
+
+	// Histograms
+	connectionsLastSuccessfulSyncHistogramVec := prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Namespace: namespace,
+			Name:      "connections_last_successful_sync_age_hours",
+			Help:      "Age of the last successful sync job (hours)",
+			Buckets:   []float64{6, 12, 18, 24, 48, 72, 168},
+		},
+		[]string{"destination_connector", "source_connector"},
+	)
+
+	for _, connectionLastSuccessfulSyncAge := range metrics.ConnectionsLastSuccessfulSyncAges {
+		age, err := connectionLastSuccessfulSyncAge.Age()
+		if err != nil {
+			log.
+				Error().
+				Err(err).
+				Str("connection_id", connectionLastSuccessfulSyncAge.ID).
+				Msg("failed to parse connection sync age as a duration")
+			continue
+		}
+
+		connectionsLastSuccessfulSyncHistogramVec.
+			WithLabelValues(
+				connectionLastSuccessfulSyncAge.DestinationConnector,
+				connectionLastSuccessfulSyncAge.SourceConnector,
+			).
+			Observe(age.Hours())
+	}
+
+	connectionsLastSuccessfulSyncHistogramVec.Collect(ch)
 }

@@ -4,10 +4,17 @@
 
 package airbyte
 
+import (
+	"fmt"
+	"math"
+	"time"
+)
+
 // Metrics represents available Airbyte metrics.
 type Metrics struct {
 	// Airbyte connections
-	Connections []ConnectionCount
+	Connections                       []ConnectionCount
+	ConnectionsLastSuccessfulSyncAges []ConnectionSyncAge
 
 	// Airbyte connectors
 	Sources      []ActorCount
@@ -25,6 +32,19 @@ type ConnectionCount struct {
 	SourceConnector      string `db:"source"`
 	Status               string `db:"status"`
 	Count                uint   `db:"count"`
+}
+
+// ConnectionSyncAge holds the age of the last job attempt for a single Airbyte Connection.
+type ConnectionSyncAge struct {
+	ID                   string  `db:"id"`
+	DestinationConnector string  `db:"destination"`
+	SourceConnector      string  `db:"source"`
+	Hours                float64 `db:"hours"` // no Scanner for time.Duration, storing as a raw string
+}
+
+// Age returns the duration since the last job attempt.
+func (csa *ConnectionSyncAge) Age() (time.Duration, error) {
+	return time.ParseDuration(fmt.Sprintf("%fh", math.Round(csa.Hours)))
 }
 
 // ActorCount holds a count of Airbyte actors, grouped by actor connector and status.
