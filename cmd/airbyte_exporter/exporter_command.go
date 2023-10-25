@@ -5,14 +5,15 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -103,24 +104,35 @@ func NewExporterCommand() *cobra.Command {
 			)
 
 			// Database connection pool
-			db, err := sqlx.Connect(databaseDriver, databaseURI)
+			pgxPool, err := pgxpool.New(context.Background(), databaseURI)
 			if err != nil {
 				log.Error().
 					Err(err).
 					Str("database_driver", databaseDriver).
 					Str("database_addr", databaseAddr).
 					Str("database_name", databaseName).
-					Msg("failed to connect to database")
+					Msg("database: failed to create connection pool")
 				return err
 			}
+
+			if err := pgxPool.Ping(context.Background()); err != nil {
+				log.Error().
+					Err(err).
+					Str("database_driver", databaseDriver).
+					Str("database_addr", databaseAddr).
+					Str("database_name", databaseName).
+					Msg("database: failed to ping")
+				return err
+			}
+
 			log.Info().
 				Str("database_driver", databaseDriver).
 				Str("database_addr", databaseAddr).
 				Str("database_name", databaseName).
-				Msg("successfully connected to database")
+				Msg("database: successfully created connection pool")
 
 			// Airbyte Exporter services
-			airbyteRepository := airbyte.NewRepository(db)
+			airbyteRepository := airbyte.NewRepository(pgxPool)
 			airbyteService := airbyte.NewService(airbyteRepository)
 
 			httpServer := newServer(airbyteService, listenAddr)

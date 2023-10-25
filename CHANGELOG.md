@@ -5,13 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [v2.2.0](https://github.com/botify-labs/airbyte_exporter/releases/tag/v2.2.0) - UNRELEASED
+## [v2.2.0](https://github.com/botify-labs/airbyte_exporter/releases/tag/v2.2.0) - 2023-10-25
 
 ### Changed
 
 - Require Go 1.21
 - Bump base Docker image to Debian 12 Bookworm
 - Update direct and transitive dependencies
+- Rework the Repository to run PostgreSQL queries using the concurrency-safe `pgxpool` package
+  and scanning helpers from `scany`
 
 
 ## [v2.1.0](https://github.com/botify-labs/airbyte_exporter/releases/tag/v2.1.0) - 2023-06-19

@@ -4,39 +4,37 @@
 
 package airbyte
 
-import "github.com/jmoiron/sqlx"
+import (
+	"context"
+
+	"github.com/georgysavva/scany/v2/pgxscan"
+	"github.com/jackc/pgx/v5/pgxpool"
+)
 
 // Repository provides an abstraction layer to perform SQL queries against the
 // Airbyte PostgreSQL database.
 type Repository struct {
-	db *sqlx.DB
+	pool *pgxpool.Pool
 }
 
 // NewRepository initializes and returns an Airbyte Repository.
-func NewRepository(db *sqlx.DB) *Repository {
+func NewRepository(pool *pgxpool.Pool) *Repository {
 	return &Repository{
-		db: db,
+		pool: pool,
 	}
 }
 
 // actorCountQuery provides a helper to run a SQL query that returns rows to be marshaled
 // as a slice of ActorCount.
 func (r *Repository) actorCountQuery(query string) ([]ActorCount, error) {
-	rows, err := r.db.Queryx(query)
+	rows, err := r.pool.Query(context.Background(), query)
 	if err != nil {
 		return []ActorCount{}, err
 	}
 
 	var actorCounts []ActorCount
-
-	for rows.Next() {
-		var actorCount ActorCount
-
-		if err := rows.StructScan(&actorCount); err != nil {
-			return []ActorCount{}, err
-		}
-
-		actorCounts = append(actorCounts, actorCount)
+	if err := pgxscan.ScanAll(&actorCounts, rows); err != nil {
+		return []ActorCount{}, err
 	}
 
 	return actorCounts, nil
@@ -45,21 +43,14 @@ func (r *Repository) actorCountQuery(query string) ([]ActorCount, error) {
 // connectionCountQuery provides a helper to run a SQL query that returns rows to be marshaled
 // as a slice of ConnectionCount.
 func (r *Repository) connectionCountQuery(query string) ([]ConnectionCount, error) {
-	rows, err := r.db.Queryx(query)
+	rows, err := r.pool.Query(context.Background(), query)
 	if err != nil {
 		return []ConnectionCount{}, err
 	}
 
 	var connectionCounts []ConnectionCount
-
-	for rows.Next() {
-		var connectionCount ConnectionCount
-
-		if err := rows.StructScan(&connectionCount); err != nil {
-			return []ConnectionCount{}, err
-		}
-
-		connectionCounts = append(connectionCounts, connectionCount)
+	if err := pgxscan.ScanAll(&connectionCounts, rows); err != nil {
+		return []ConnectionCount{}, err
 	}
 
 	return connectionCounts, nil
@@ -68,21 +59,14 @@ func (r *Repository) connectionCountQuery(query string) ([]ConnectionCount, erro
 // connectionSyncAgeQuery provides a helper to run a SQL query that returns rows to be marshaled
 // as a slice of ConnectionSyncAge.
 func (r *Repository) connectionSyncAgeQuery(query string) ([]ConnectionSyncAge, error) {
-	rows, err := r.db.Queryx(query)
+	rows, err := r.pool.Query(context.Background(), query)
 	if err != nil {
 		return []ConnectionSyncAge{}, err
 	}
 
 	var connectionSyncAges []ConnectionSyncAge
-
-	for rows.Next() {
-		var connectionSyncAge ConnectionSyncAge
-
-		if err := rows.StructScan(&connectionSyncAge); err != nil {
-			return []ConnectionSyncAge{}, err
-		}
-
-		connectionSyncAges = append(connectionSyncAges, connectionSyncAge)
+	if err := pgxscan.ScanAll(&connectionSyncAges, rows); err != nil {
+		return []ConnectionSyncAge{}, err
 	}
 
 	return connectionSyncAges, nil
@@ -91,21 +75,14 @@ func (r *Repository) connectionSyncAgeQuery(query string) ([]ConnectionSyncAge, 
 // jobCountQuery provides a helper to run a SQL query that returns rows to be marshaled
 // as a slice of JobCount.
 func (r *Repository) jobCountQuery(query string) ([]JobCount, error) {
-	rows, err := r.db.Queryx(query)
+	rows, err := r.pool.Query(context.Background(), query)
 	if err != nil {
 		return []JobCount{}, err
 	}
 
 	var jobCounts []JobCount
-
-	for rows.Next() {
-		var jobCount JobCount
-
-		if err := rows.StructScan(&jobCount); err != nil {
-			return []JobCount{}, err
-		}
-
-		jobCounts = append(jobCounts, jobCount)
+	if err := pgxscan.ScanAll(&jobCounts, rows); err != nil {
+		return []JobCount{}, err
 	}
 
 	return jobCounts, nil
