@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [v2.3.0](https://github.com/botify-labs/airbyte_exporter/releases/tag/v2.3.0) - 2024-01-16
+
+### Changed
+
+- Update the following metrics to add the connection's `schedule_type` dimension:
+    - `airbyte_jobs_completed_total` counter
+    - `airbyte_jobs_pending` gauge
+    - `airbyte_jobs_running` gauge
+    - `airbyte_connections_last_successful_sync_age_hours` histogram
+- Update direct and transitive dependencies
+
+
 ## [v2.2.0](https://github.com/botify-labs/airbyte_exporter/releases/tag/v2.2.0) - 2023-10-25
 
 ### Changed
