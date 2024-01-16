@@ -7,15 +7,15 @@
 
 ## Metrics exposed
 
-| Metric                                               | Type      | Labels                                                |
-| ---------------------------------------------------- | --------- | ----------------------------------------------------- |
-| `airbyte_jobs_completed_total`                       | Counter   | destination_connector, source_connector, type, status |
-| `airbyte_connections`                                | Gauge     | destination_connector, source_connector, status       |
-| `airbyte_sources`                                    | Gauge     | source_connector, tombstone                           |
-| `airbyte_destinations`                               | Gauge     | destination_connector, tombstone                      |
-| `airbyte_jobs_pending`                               | Gauge     | destination_connector, source_connector, type         |
-| `airbyte_jobs_running`                               | Gauge     | destination_connector, source_connector, type         |
-| `airbyte_connections_last_successful_sync_age_hours` | Histogram | destination_connector, source_connector               |
+| Metric                                               | Type      | Labels                                                               |
+| ---------------------------------------------------- | --------- | -------------------------------------------------------------------- |
+| `airbyte_jobs_completed_total`                       | Counter   | destination_connector, source_connector, schedule_type, type, status |
+| `airbyte_connections`                                | Gauge     | destination_connector, source_connector, status                      |
+| `airbyte_sources`                                    | Gauge     | source_connector, tombstone                                          |
+| `airbyte_destinations`                               | Gauge     | destination_connector, tombstone                                     |
+| `airbyte_jobs_pending`                               | Gauge     | destination_connector, source_connector, schedule_type, type         |
+| `airbyte_jobs_running`                               | Gauge     | destination_connector, source_connector, schedule_type, type         |
+| `airbyte_connections_last_successful_sync_age_hours` | Histogram | destination_connector, source_connector, schedule_type               |
 
 
 ## Configuration

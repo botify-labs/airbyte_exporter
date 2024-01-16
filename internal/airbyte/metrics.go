@@ -39,7 +39,8 @@ type ConnectionSyncAge struct {
 	ID                   string  `db:"id"`
 	DestinationConnector string  `db:"destination"`
 	SourceConnector      string  `db:"source"`
-	Hours                float64 `db:"hours"` // no Scanner for time.Duration, storing as a raw string
+	ScheduleType         string  `db:"connection_schedule_type"`
+	Hours                float64 `db:"hours"` // no Scanner for time.Duration, storing as a raw value
 }
 
 // Age returns the duration since the last job attempt.
@@ -58,6 +59,7 @@ type ActorCount struct {
 type JobCount struct {
 	DestinationConnector string `db:"destination"`
 	SourceConnector      string `db:"source"`
+	ScheduleType         string `db:"connection_schedule_type"`
 	Type                 string `db:"config_type"`
 	Status               string `db:"status"`
 	Count                uint   `db:"count"`
