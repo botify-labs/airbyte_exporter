@@ -62,19 +62,19 @@ func NewCollector(airbyteService *airbyte.Service) *collector {
 		jobsCompleted: prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "", "jobs_completed_total"),
 			"Completed jobs (total)",
-			[]string{"destination_connector", "source_connector", "type", "status"},
+			[]string{"destination_connector", "source_connector", "schedule_type", "type", "status"},
 			nil,
 		),
 		jobsPending: prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "", "jobs_pending"),
 			"Pending jobs",
-			[]string{"destination_connector", "source_connector", "type"},
+			[]string{"destination_connector", "source_connector", "schedule_type", "type"},
 			nil,
 		),
 		jobsRunning: prometheus.NewDesc(
 			prometheus.BuildFQName(namespace, "", "jobs_running"),
 			"Running jobs",
-			[]string{"destination_connector", "source_connector", "type"},
+			[]string{"destination_connector", "source_connector", "schedule_type", "type"},
 			nil,
 		),
 	}
@@ -106,6 +106,7 @@ func (c *collector) Collect(ch chan<- prometheus.Metric) {
 			float64(jobsCompleted.Count),
 			jobsCompleted.DestinationConnector,
 			jobsCompleted.SourceConnector,
+			jobsCompleted.ScheduleType,
 			jobsCompleted.Type,
 			jobsCompleted.Status,
 		)
@@ -150,6 +151,7 @@ func (c *collector) Collect(ch chan<- prometheus.Metric) {
 			float64(jobsPending.Count),
 			jobsPending.DestinationConnector,
 			jobsPending.SourceConnector,
+			jobsPending.ScheduleType,
 			jobsPending.Type,
 		)
 	}
@@ -161,6 +163,7 @@ func (c *collector) Collect(ch chan<- prometheus.Metric) {
 			float64(jobsRunning.Count),
 			jobsRunning.DestinationConnector,
 			jobsRunning.SourceConnector,
+			jobsRunning.ScheduleType,
 			jobsRunning.Type,
 		)
 	}
@@ -173,7 +176,7 @@ func (c *collector) Collect(ch chan<- prometheus.Metric) {
 			Help:      "Age of the last successful sync job (hours)",
 			Buckets:   []float64{6, 12, 18, 24, 48, 72, 168},
 		},
-		[]string{"destination_connector", "source_connector"},
+		[]string{"destination_connector", "source_connector", "schedule_type"},
 	)
 
 	for _, connectionLastSuccessfulSyncAge := range metrics.ConnectionsLastSuccessfulSyncAges {
@@ -191,6 +194,7 @@ func (c *collector) Collect(ch chan<- prometheus.Metric) {
 			WithLabelValues(
 				connectionLastSuccessfulSyncAge.DestinationConnector,
 				connectionLastSuccessfulSyncAge.SourceConnector,
+				connectionLastSuccessfulSyncAge.ScheduleType,
 			).
 			Observe(age.Hours())
 	}

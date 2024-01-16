@@ -115,7 +115,7 @@ func (r *Repository) ConnectionsLastSuccessfulSyncAge() ([]ConnectionSyncAge, er
 		AND   status = 'succeeded'
 		GROUP BY scope
 	)
-	SELECT c.id, ad1.name as destination, ad2.name as source, EXTRACT(EPOCH FROM AGE(NOW(), j.updated_at))/3600 as hours
+	SELECT c.id, COALESCE(c.schedule_type, 'manual') AS connection_schedule_type, ad1.name as destination, ad2.name as source, EXTRACT(EPOCH FROM AGE(NOW(), j.updated_at))/3600 as hours
 	FROM connection c
 	JOIN j ON j.scope = CAST(c.id AS VARCHAR(255))
 	JOIN actor a1 ON c.destination_id = a1.id
@@ -157,7 +157,7 @@ func (r *Repository) DestinationsCount() ([]ActorCount, error) {
 // JobsCompletedCount returns the count of completed Airbyte jobs, grouped by destination, source, type and status.
 func (r *Repository) JobsCompletedCount() ([]JobCount, error) {
 	query := `
-	SELECT ad1.name as destination, ad2.name as source, j.config_type, j.status, COUNT(j.status)
+	SELECT ad1.name as destination, ad2.name as source, COALESCE(c.schedule_type, 'manual') AS connection_schedule_type, j.config_type, j.status, COUNT(j.status)
 	FROM jobs j
 	JOIN connection c ON j.scope = CAST(c.id AS VARCHAR(255))
 	JOIN actor a1 ON c.destination_id = a1.id
@@ -165,8 +165,8 @@ func (r *Repository) JobsCompletedCount() ([]JobCount, error) {
 	JOIN actor a2 ON c.source_id = a2.id
 	JOIN actor_definition ad2 ON a2.actor_definition_id = ad2.id
 	WHERE j.status IN ('cancelled', 'failed', 'succeeded')
-	GROUP BY ad1.name, ad2.name, j.config_type, j.status
-	ORDER BY ad1.name, ad2.name, j.config_type, j.status
+	GROUP BY ad1.name, ad2.name, connection_schedule_type, j.config_type, j.status
+	ORDER BY ad1.name, ad2.name, connection_schedule_type, j.config_type, j.status
 	`
 
 	return r.jobCountQuery(query)
@@ -175,7 +175,7 @@ func (r *Repository) JobsCompletedCount() ([]JobCount, error) {
 // JobsPendingCount returns the count of pending Airbyte jobs, grouped by destination, source and type.
 func (r *Repository) JobsPendingCount() ([]JobCount, error) {
 	query := `
-	SELECT ad1.name as destination, ad2.name as source, j.config_type, j.status, COUNT(j.status)
+	SELECT ad1.name as destination, ad2.name as source, COALESCE(c.schedule_type, 'manual') AS connection_schedule_type, j.config_type, j.status, COUNT(j.status)
 	FROM jobs j
 	JOIN connection c ON CAST(c.id AS VARCHAR(255)) = j.scope
 	JOIN actor a1 ON c.destination_id = a1.id
@@ -183,8 +183,8 @@ func (r *Repository) JobsPendingCount() ([]JobCount, error) {
 	JOIN actor a2 ON c.source_id = a2.id
 	JOIN actor_definition ad2 ON a2.actor_definition_id = ad2.id
 	WHERE j.status = 'pending'
-	GROUP BY ad1.name, ad2.name, j.config_type, j.status
-	ORDER BY ad1.name, ad2.name, j.config_type, j.status
+	GROUP BY ad1.name, ad2.name, connection_schedule_type, j.config_type, j.status
+	ORDER BY ad1.name, ad2.name, connection_schedule_type, j.config_type, j.status
 	`
 
 	return r.jobCountQuery(query)
@@ -193,7 +193,7 @@ func (r *Repository) JobsPendingCount() ([]JobCount, error) {
 // JobsRunningCount returns the count of running Airbyte jobs, grouped by destination, source and type.
 func (r *Repository) JobsRunningCount() ([]JobCount, error) {
 	query := `
-	SELECT ad1.name as destination, ad2.name as source, j.config_type, j.status, COUNT(j.status)
+	SELECT ad1.name as destination, ad2.name as source, COALESCE(c.schedule_type, 'manual') AS connection_schedule_type, j.config_type, j.status, COUNT(j.status)
 	FROM jobs j
 	JOIN attempts att ON att.job_id = j.id
 	JOIN connection c ON j.scope = CAST(c.id AS VARCHAR(255))
@@ -203,8 +203,8 @@ func (r *Repository) JobsRunningCount() ([]JobCount, error) {
 	JOIN actor_definition ad2 ON a2.actor_definition_id = ad2.id
 	WHERE j.status = 'running'
 	AND   att.status = 'running'
-	GROUP BY ad1.name, ad2.name, j.config_type, j.status
-	ORDER BY ad1.name, ad2.name, j.config_type, j.status
+	GROUP BY ad1.name, ad2.name, connection_schedule_type, j.config_type, j.status
+	ORDER BY ad1.name, ad2.name, connection_schedule_type, j.config_type, j.status
 	`
 
 	return r.jobCountQuery(query)
