@@ -126,7 +126,7 @@ Run the exporter:
 $ docker run \
     --name airbyte-exporter \
     --rm \
-    -e AIRBYTE_EXPORTER_DB_HOST=postgresql \
+    -e AIRBYTE_EXPORTER_DB_ADDR="postgres:5432" \
     -e AIRBYTE_EXPORTER_DB_PASSWORD=ch4ng3m3 \
     -p 8080:8080
     ghcr.io/botify-labs/airbyte_exporter:latest
